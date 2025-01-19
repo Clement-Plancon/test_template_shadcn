@@ -68,8 +68,20 @@ const ThemeControl = () => {
 
   // Variables simplifiées pour le mode de base
   const baseControls = [
-    { name: "--primary", label: "Primary Color", type: "color", defaultValue: "#ff8c00" },
-    { name: "--radius", label: "Border Radius", type: "range", defaultValue: 8, min: 0, max: 50 },
+    {
+      name: "--primary",
+      label: "Primary Color",
+      type: "color",
+      defaultValue: "#ff8c00",
+    },
+    {
+      name: "--radius",
+      label: "Border Radius",
+      type: "range",
+      defaultValue: 8,
+      min: 0,
+      max: 50,
+    },
   ];
 
   const handleVariableChange = (name: string, value: string) => {
@@ -93,10 +105,13 @@ const ThemeControl = () => {
     } else {
       baseControls.forEach((control) => {
         if (control.type === "color") {
-          const hslValue = hexToHSL(control.defaultValue);
+          const hslValue = hexToHSL(control.defaultValue as string);
           document.documentElement.style.setProperty(control.name, hslValue);
         } else if (control.type === "range") {
-          document.documentElement.style.setProperty(control.name, `${control.defaultValue}px`);
+          document.documentElement.style.setProperty(
+            control.name,
+            `${control.defaultValue}px`
+          );
         }
       });
     }
@@ -117,7 +132,9 @@ const ThemeControl = () => {
         <div className="fixed top-4 right-4 bg-gray-800 text-white p-4 rounded-lg shadow-lg z-50 w-72 h-[80vh] overflow-y-auto">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-bold">
-              {isAdvanced ? "Contrôle de thème avancé" : "Contrôle de thème de base"}
+              {isAdvanced
+                ? "Contrôle de thème avancé"
+                : "Contrôle de thème de base"}
             </h3>
             <button
               onClick={() => setIsOpen(false)}
@@ -134,17 +151,21 @@ const ThemeControl = () => {
                 {control.type === "color" ? (
                   <input
                     type="color"
-                    defaultValue={control.defaultValue}
-                    onChange={(e) => handleVariableChange(control.name, e.target.value)}
+                    defaultValue={control.defaultValue as string}
+                    onChange={(e) =>
+                      handleVariableChange(control.name, e.target.value)
+                    }
                     className="w-full"
                   />
                 ) : (
                   <input
                     type="range"
-                    min={control.min}
-                    max={control.max}
-                    defaultValue={control.defaultValue}
-                    onChange={(e) => handleVariableChange(control.name, e.target.value)}
+                    min={(control.min ?? 0).toString()} // Conversion explicite et valeur par défaut
+                    max={(control.max ?? 50).toString()} // Conversion explicite et valeur par défaut
+                    defaultValue={control.defaultValue.toString()} // Conversion explicite
+                    onChange={(e) =>
+                      handleVariableChange(control.name, e.target.value)
+                    }
                     className="w-full"
                   />
                 )}
@@ -161,14 +182,18 @@ const ThemeControl = () => {
                     min="0"
                     max="50"
                     defaultValue="8"
-                    onChange={(e) => handleVariableChange(variable, e.target.value)}
+                    onChange={(e) =>
+                      handleVariableChange(variable, e.target.value)
+                    }
                     className="w-full"
                   />
                 ) : (
                   <input
                     type="color"
                     defaultValue="#ffffff"
-                    onChange={(e) => handleVariableChange(variable, e.target.value)}
+                    onChange={(e) =>
+                      handleVariableChange(variable, e.target.value)
+                    }
                     className="w-full"
                   />
                 )}
@@ -180,7 +205,9 @@ const ThemeControl = () => {
               onClick={() => setIsAdvanced(!isAdvanced)}
               className="py-2 px-4 bg-gray-700 hover:bg-gray-600 rounded"
             >
-              {isAdvanced ? "Revenir au panneau de base" : "configuration avancée"}
+              {isAdvanced
+                ? "Revenir au panneau de base"
+                : "Configuration avancée"}
             </button>
             <button
               onClick={resetVariables}
