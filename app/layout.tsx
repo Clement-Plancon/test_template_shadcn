@@ -4,6 +4,8 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Navbar } from "@/components/layout/navbar";
 import { ThemeProvider } from "@/components/layout/theme-provider";
+import ThemeControl from "@/components/ui/themeControl"; // Import du composant ThemeControl
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -26,7 +28,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <Navbar />
-
+          <ThemeControl /> {/* Ajout de la fenêtre de contrôle */}
           {children}
         </ThemeProvider>
       </body>
