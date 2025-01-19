@@ -39,50 +39,86 @@ const hexToHSL = (hex: string): string => {
 };
 
 const ThemeControl = () => {
-  const [primaryColor, setPrimaryColor] = useState("#ff8c00");
-  const [borderRadius, setBorderRadius] = useState(8);
-  const [isOpen, setIsOpen] = useState(true); // État pour afficher/masquer le panneau
+  const [isOpen, setIsOpen] = useState(true);
+  const [isAdvanced, setIsAdvanced] = useState(false); // État pour basculer entre les modes
 
-  const handleColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const color = e.target.value;
-    setPrimaryColor(color);
-    const hslColor = hexToHSL(color);
-    document.documentElement.style.setProperty("--primary", hslColor);
-    document.documentElement.style.setProperty("--ring", hslColor);
+  // Variables CSS pour le mode avancé
+  const variables = [
+    "--background",
+    "--foreground",
+    "--card",
+    "--card-foreground",
+    "--popover",
+    "--popover-foreground",
+    "--primary",
+    "--primary-foreground",
+    "--secondary",
+    "--secondary-foreground",
+    "--muted",
+    "--muted-foreground",
+    "--accent",
+    "--accent-foreground",
+    "--destructive",
+    "--destructive-foreground",
+    "--border",
+    "--input",
+    "--ring",
+    "--radius",
+  ];
+
+  // Variables simplifiées pour le mode de base
+  const baseControls = [
+    { name: "--primary", label: "Primary Color", type: "color", defaultValue: "#ff8c00" },
+    { name: "--radius", label: "Border Radius", type: "range", defaultValue: 8, min: 0, max: 50 },
+  ];
+
+  const handleVariableChange = (name: string, value: string) => {
+    if (name === "--radius") {
+      document.documentElement.style.setProperty(name, `${value}px`);
+    } else {
+      const hslValue = hexToHSL(value);
+      document.documentElement.style.setProperty(name, hslValue);
+    }
   };
 
-  const handleRadiusChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const radius = e.target.value;
-    setBorderRadius(Number(radius));
-    document.documentElement.style.setProperty("--radius", `${radius}px`);
-  };
-
-  const resetTheme = () => {
-    setPrimaryColor("#ff8c00");
-    setBorderRadius(8);
-    const defaultHSL = hexToHSL("#ff8c00");
-    document.documentElement.style.setProperty("--primary", defaultHSL);
-    document.documentElement.style.setProperty("--radius", "8px");
+  const resetVariables = () => {
+    if (isAdvanced) {
+      variables.forEach((variable) => {
+        if (variable === "--radius") {
+          document.documentElement.style.setProperty(variable, "8px");
+        } else {
+          document.documentElement.style.setProperty(variable, "");
+        }
+      });
+    } else {
+      baseControls.forEach((control) => {
+        if (control.type === "color") {
+          const hslValue = hexToHSL(control.defaultValue);
+          document.documentElement.style.setProperty(control.name, hslValue);
+        } else if (control.type === "range") {
+          document.documentElement.style.setProperty(control.name, `${control.defaultValue}px`);
+        }
+      });
+    }
   };
 
   return (
     <>
-      {/* Bouton pour afficher le panneau si fermé */}
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
           className="fixed top-4 right-4 bg-gray-800 text-white px-4 py-2 rounded shadow-lg hover:bg-gray-700"
         >
-          Ouvrir le panneau de configuration
+          Ouvrir panneau de configuration
         </button>
       )}
 
-      {/* Panneau de contrôle */}
       {isOpen && (
-        <div className="fixed top-4 right-4 bg-gray-800 text-white p-4 rounded-lg shadow-lg z-50 w-64">
+        <div className="fixed top-4 right-4 bg-gray-800 text-white p-4 rounded-lg shadow-lg z-50 w-72 h-[80vh] overflow-y-auto">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-bold">Modifier le theme</h3>
-            {/* Bouton pour fermer le panneau */}
+            <h3 className="text-lg font-bold">
+              {isAdvanced ? "Contrôle de thème avancé" : "Contrôle de thème de base"}
+            </h3>
             <button
               onClick={() => setIsOpen(false)}
               className="text-white bg-gray-600 hover:bg-gray-500 p-1 rounded"
@@ -91,32 +127,68 @@ const ThemeControl = () => {
             </button>
           </div>
 
-          <label className="block mb-4">
-            <span className="text-sm">Primary Color:</span>
-            <input
-              type="color"
-              value={primaryColor}
-              onChange={handleColorChange}
-              className="w-full mt-1"
-            />
-          </label>
-          <label className="block mb-4">
-            <span className="text-sm">Border Radius:</span>
-            <input
-              type="range"
-              min="0"
-              max="50"
-              value={borderRadius}
-              onChange={handleRadiusChange}
-              className="w-full mt-1"
-            />
-          </label>
-          <button
-            onClick={resetTheme}
-            className="w-full py-2 bg-gray-700 hover:bg-gray-600 rounded"
-          >
-            Reset
-          </button>
+          {!isAdvanced &&
+            baseControls.map((control) => (
+              <div key={control.name} className="mb-4">
+                <label className="block text-sm mb-1">{control.label}</label>
+                {control.type === "color" ? (
+                  <input
+                    type="color"
+                    defaultValue={control.defaultValue}
+                    onChange={(e) => handleVariableChange(control.name, e.target.value)}
+                    className="w-full"
+                  />
+                ) : (
+                  <input
+                    type="range"
+                    min={control.min}
+                    max={control.max}
+                    defaultValue={control.defaultValue}
+                    onChange={(e) => handleVariableChange(control.name, e.target.value)}
+                    className="w-full"
+                  />
+                )}
+              </div>
+            ))}
+
+          {isAdvanced &&
+            variables.map((variable) => (
+              <div key={variable} className="mb-4">
+                <label className="block text-sm mb-1">{variable}</label>
+                {variable === "--radius" ? (
+                  <input
+                    type="range"
+                    min="0"
+                    max="50"
+                    defaultValue="8"
+                    onChange={(e) => handleVariableChange(variable, e.target.value)}
+                    className="w-full"
+                  />
+                ) : (
+                  <input
+                    type="color"
+                    defaultValue="#ffffff"
+                    onChange={(e) => handleVariableChange(variable, e.target.value)}
+                    className="w-full"
+                  />
+                )}
+              </div>
+            ))}
+
+          <div className="flex justify-between mt-4">
+            <button
+              onClick={() => setIsAdvanced(!isAdvanced)}
+              className="py-2 px-4 bg-gray-700 hover:bg-gray-600 rounded"
+            >
+              {isAdvanced ? "Revenir au panneau de base" : "configuration avancée"}
+            </button>
+            <button
+              onClick={resetVariables}
+              className="py-2 px-4 bg-gray-700 hover:bg-gray-600 rounded"
+            >
+              Reset
+            </button>
+          </div>
         </div>
       )}
     </>
